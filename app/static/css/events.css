@@ -1,0 +1,244 @@
+/* Events Map Page Styles */
+
+.events-container {
+    display: grid;
+    grid-template-columns: 300px 1fr 300px;
+    gap: 0;
+    height: calc(100vh - 140px);
+    max-height: 800px;
+    margin-top: -2rem;
+}
+
+/* Filter Panel (Left) */
+.filter-panel {
+    background-color: var(--white);
+    padding: 1.5rem;
+    overflow-y: auto;
+    box-shadow: var(--box-shadow);
+}
+
+.filter-panel h2 {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+}
+
+.filter-panel .form-group {
+    margin-bottom: 1rem;
+}
+
+.filter-panel .btn {
+    width: 100%;
+    margin-bottom: 0.5rem;
+}
+
+/* Map Container */
+.map-container {
+    position: relative;
+    background-color: #e0e0e0;
+}
+
+#map {
+    width: 100%;
+    height: 100%;
+    min-height: 500px;
+}
+
+/* Create Panel (Right) */
+.create-panel {
+    background-color: var(--white);
+    padding: 1.5rem;
+    overflow-y: auto;
+    box-shadow: var(--box-shadow);
+}
+
+.create-panel h2 {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+}
+
+.create-panel .form-group {
+    margin-bottom: 1rem;
+}
+
+.create-panel .btn {
+    width: 100%;
+    margin-bottom: 0.5rem;
+}
+
+/* Form Styles */
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: var(--border-radius);
+    font-family: inherit;
+    font-size: 0.9rem;
+    transition: border-color 0.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 60px;
+}
+
+.form-help {
+    margin-bottom: 1rem;
+}
+
+.form-help small {
+    color: var(--gray);
+    font-size: 0.85rem;
+}
+
+/* Hidden state for form */
+.hidden {
+    display: none;
+}
+
+/* Leaflet Popup Styles */
+.leaflet-popup-content {
+    margin: 0.75rem;
+    font-size: 0.9rem;
+}
+
+.event-popup h3 {
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.event-popup p {
+    margin: 0.25rem 0;
+    color: var(--text-color);
+}
+
+.event-popup .event-difficulty {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-top: 0.5rem;
+}
+
+.event-popup .difficulty-beginner {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+}
+
+.event-popup .difficulty-intermediate {
+    background-color: #fff3e0;
+    color: #e65100;
+}
+
+.event-popup .difficulty-advanced {
+    background-color: #fce4ec;
+    color: #c2185b;
+}
+
+.event-popup .difficulty-expert {
+    background-color: #f3e5f5;
+    color: #6a1b9a;
+}
+
+/* Temporary marker styles */
+.temp-marker {
+    background-color: rgba(255, 193, 7, 0.6);
+    border: 2px solid #ffa000;
+    border-radius: 50%;
+}
+
+/* Loading state */
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.loading-spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid var(--primary-color);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .events-container {
+        grid-template-columns: 250px 1fr 250px;
+    }
+    
+    .filter-panel,
+    .create-panel {
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 992px) {
+    .events-container {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto 1fr;
+        height: auto;
+        max-height: none;
+    }
+    
+    .filter-panel,
+    .create-panel {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    
+    #map {
+        min-height: 400px;
+    }
+}
+
+@media (max-width: 768px) {
+    .events-container {
+        margin-top: 0;
+    }
+    
+    .filter-panel h2,
+    .create-panel h2 {
+        font-size: 1.25rem;
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        font-size: 0.85rem;
+        padding: 0.4rem;
+    }
+}
