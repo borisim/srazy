@@ -3,12 +3,21 @@
 {% block title %}Home - Srazy{% endblock %}
 
 {% block content %}
-<section class="hero">
-    <h1>Welcome to Srazy</h1>
-    <p class="hero-subtitle">A modern web application template</p>
-    <div class="hero-actions">
-        <a href="/about" class="btn btn-primary">Learn More</a>
-        <a href="/contact" class="btn btn-secondary">Get Started</a>
+<section class="hero hero-with-video">
+    <div class="hero-video-background">
+        <video autoplay muted loop playsinline id="hero-video">
+            <source src="https://assets.mixkit.co/videos/preview/mixkit-athletes-running-on-a-running-track-44408-large.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        <div class="hero-video-overlay"></div>
+    </div>
+    <div class="hero-content">
+        <h1>Welcome to Srazy</h1>
+        <p class="hero-subtitle">A modern web application template</p>
+        <div class="hero-actions">
+            <a href="/about" class="btn btn-primary">Learn More</a>
+            <a href="/contact" class="btn btn-secondary">Get Started</a>
+        </div>
     </div>
 </section>
 
