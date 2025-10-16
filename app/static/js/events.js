@@ -4,6 +4,7 @@ let map;
 let markers = [];
 let tempMarker = null;
 let selectedLocation = null;
+let useLeaflet = typeof L !== 'undefined';
 
 // Initialize the map when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
@@ -16,17 +17,56 @@ document.addEventListener('DOMContentLoaded', function() {
  * Initialize the Leaflet map
  */
 function initializeMap() {
-    // Create map centered on a default location (can be customized)
-    map = L.map('map').setView([40.7128, -74.0060], 12); // New York as default
+    if (useLeaflet) {
+        // Create map centered on a default location (can be customized)
+        map = L.map('map').setView([40.7128, -74.0060], 12); // New York as default
+        
+        // Add OpenStreetMap tiles (similar to Google Maps)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 19
+        }).addTo(map);
+        
+        // Add click handler for selecting location
+        map.on('click', onMapClick);
+    } else {
+        // Fallback: Create a simple placeholder map
+        initializeFallbackMap();
+    }
+}
+
+/**
+ * Initialize fallback map when Leaflet is not available
+ */
+function initializeFallbackMap() {
+    const mapElement = document.getElementById('map');
+    mapElement.innerHTML = `
+        <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                    display: flex; flex-direction: column; align-items: center; justify-content: center; 
+                    color: white; text-align: center; padding: 2rem;">
+            <h2 style="margin-bottom: 1rem; font-size: 1.5rem;">Interactive Map</h2>
+            <p style="margin-bottom: 1rem;">Click anywhere on this area to set event location</p>
+            <div id="fallback-markers" style="margin-top: 2rem; width: 100%; max-height: 300px; overflow-y: auto;"></div>
+        </div>
+    `;
     
-    // Add OpenStreetMap tiles (similar to Google Maps)
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        maxZoom: 19
-    }).addTo(map);
-    
-    // Add click handler for selecting location
-    map.on('click', onMapClick);
+    // Add click handler for fallback map
+    mapElement.addEventListener('click', function(e) {
+        // Calculate relative position as coordinates
+        const rect = mapElement.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        // Convert to lat/lng (simplified)
+        const lat = 40.7128 + (y / rect.height - 0.5) * 0.1;
+        const lng = -74.0060 + (x / rect.width - 0.5) * 0.1;
+        
+        selectedLocation = { lat: lat, lng: lng };
+        document.getElementById('event-latitude').value = lat.toFixed(6);
+        document.getElementById('event-longitude').value = lng.toFixed(6);
+        
+        showNotification('Location selected on map', 'success');
+    });
 }
 
 /**
@@ -85,7 +125,7 @@ function setupEventListeners() {
         document.getElementById('create-event-form').reset();
         
         // Remove temp marker
-        if (tempMarker) {
+        if (tempMarker && useLeaflet) {
             map.removeLayer(tempMarker);
             tempMarker = null;
         }
@@ -142,24 +182,51 @@ async function loadEvents() {
  * Display events on the map
  */
 function displayEventsOnMap(events) {
-    // Clear existing markers
-    markers.forEach(marker => map.removeLayer(marker));
-    markers = [];
-    
-    // Add markers for each event
-    events.forEach(event => {
-        const marker = L.marker([event.latitude, event.longitude])
-            .addTo(map)
-            .bindPopup(createEventPopup(event));
+    if (useLeaflet) {
+        // Clear existing markers
+        markers.forEach(marker => map.removeLayer(marker));
+        markers = [];
         
-        markers.push(marker);
-    });
-    
-    // Fit map to show all markers if there are any
-    if (markers.length > 0) {
-        const group = L.featureGroup(markers);
-        map.fitBounds(group.getBounds().pad(0.1));
+        // Add markers for each event
+        events.forEach(event => {
+            const marker = L.marker([event.latitude, event.longitude])
+                .addTo(map)
+                .bindPopup(createEventPopup(event));
+            
+            markers.push(marker);
+        });
+        
+        // Fit map to show all markers if there are any
+        if (markers.length > 0) {
+            const group = L.featureGroup(markers);
+            map.fitBounds(group.getBounds().pad(0.1));
+        }
+    } else {
+        // Fallback: Display events in a list
+        displayEventsInFallback(events);
     }
+}
+
+/**
+ * Display events in fallback mode
+ */
+function displayEventsInFallback(events) {
+    const container = document.getElementById('fallback-markers');
+    if (!container) return;
+    
+    if (events.length === 0) {
+        container.innerHTML = '<p style="padding: 1rem;">No events to display</p>';
+        return;
+    }
+    
+    container.innerHTML = events.map(event => `
+        <div style="background: rgba(255,255,255,0.1); padding: 1rem; margin: 0.5rem; border-radius: 8px; text-align: left;">
+            <h4 style="margin: 0 0 0.5rem 0;">${event.sport}</h4>
+            <p style="margin: 0.25rem 0; font-size: 0.9rem;">${event.place}</p>
+            <p style="margin: 0.25rem 0; font-size: 0.85rem;">${new Date(event.date).toLocaleString()}</p>
+            <p style="margin: 0.25rem 0; font-size: 0.85rem;">Difficulty: ${event.difficulty}</p>
+        </div>
+    `).join('');
 }
 
 /**
@@ -235,7 +302,7 @@ async function createEvent() {
         document.getElementById('show-create-form').classList.remove('hidden');
         
         // Remove temp marker
-        if (tempMarker) {
+        if (tempMarker && useLeaflet) {
             map.removeLayer(tempMarker);
             tempMarker = null;
         }
