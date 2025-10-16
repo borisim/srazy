@@ -6,8 +6,8 @@
 }
 
 :root {
-    --primary-color: #3498db;
-    --secondary-color: #2ecc71;
+    --primary-color: #ceb548;
+    --secondary-color: #6b6509;
     --text-color: #333;
     --bg-color: #f4f4f4;
     --white: #ffffff;
@@ -183,7 +183,7 @@ body {
 }
 
 .btn-primary:hover {
-    background-color: #2980b9;
+    background-color: #000000;
     transform: translateY(-2px);
 }
 
@@ -193,7 +193,7 @@ body {
 }
 
 .btn-secondary:hover {
-    background-color: #27ae60;
+    background-color: #000000;
     transform: translateY(-2px);
 }
 
