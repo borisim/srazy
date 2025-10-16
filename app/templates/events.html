@@ -59,17 +59,39 @@
         </form>
     </div>
     
-    <!-- Map Container -->
-    <div class="map-container">
-        <div id="map"></div>
+    <!-- Map/List Container -->
+    <div class="map-list-container">
+        <!-- View Toggle Buttons -->
+        <div class="view-toggle">
+            <button id="toggle-map-view" class="btn btn-toggle active">
+                <span>🗺️</span> Map View
+            </button>
+            <button id="toggle-list-view" class="btn btn-toggle">
+                <span>📋</span> List View
+            </button>
+        </div>
+        
+        <!-- Map View -->
+        <div id="map-view" class="map-container active-view">
+            <div id="map"></div>
+        </div>
+        
+        <!-- List View -->
+        <div id="list-view" class="list-container hidden">
+            <div id="events-list" class="events-list">
+                <p class="no-events">No events to display. Create your first event!</p>
+            </div>
+        </div>
     </div>
     
     <!-- Right Event Creation Panel -->
     <div class="create-panel">
-        <h2>Create Event</h2>
+        <h2 id="form-title">Create Event</h2>
         <button id="show-create-form" class="btn btn-primary">+ New Event</button>
         
         <form id="create-event-form" class="hidden">
+            <input type="hidden" id="event-id" name="id">
+            
             <div class="form-group">
                 <label for="event-sport">Sport *</label>
                 <select id="event-sport" name="sport" required>
@@ -122,10 +144,10 @@
             </div>
             
             <div class="form-help">
-                <small>* Click on the map to set event location</small>
+                <small id="form-help-text">* Click on the map to set event location</small>
             </div>
             
-            <button type="submit" class="btn btn-primary">Create Event</button>
+            <button type="submit" class="btn btn-primary" id="submit-btn">Create Event</button>
             <button type="button" id="cancel-create" class="btn btn-secondary">Cancel</button>
         </form>
     </div>

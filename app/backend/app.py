@@ -114,6 +114,47 @@ def create_event():
         db.session.rollback()
         return jsonify({'error': str(e)}), 400
 
+@app.route('/api/events/<int:event_id>', methods=['PUT'])
+def update_event(event_id):
+    """Update an existing event"""
+    try:
+        event = Event.query.get_or_404(event_id)
+        data = request.get_json()
+        
+        # Update fields if provided
+        if 'sport' in data:
+            event.sport = data['sport']
+        if 'date' in data:
+            event.date = datetime.fromisoformat(data['date'])
+        if 'place' in data:
+            event.place = data['place']
+        if 'difficulty' in data:
+            event.difficulty = data['difficulty']
+        if 'latitude' in data:
+            event.latitude = float(data['latitude'])
+        if 'longitude' in data:
+            event.longitude = float(data['longitude'])
+        if 'description' in data:
+            event.description = data['description']
+        
+        db.session.commit()
+        return jsonify(event.to_dict())
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 400
+
+@app.route('/api/events/<int:event_id>', methods=['DELETE'])
+def delete_event(event_id):
+    """Delete an event"""
+    try:
+        event = Event.query.get_or_404(event_id)
+        db.session.delete(event)
+        db.session.commit()
+        return jsonify({'message': 'Event deleted successfully'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 400
+
 @app.route('/api/health')
 def health_check():
     """API health check endpoint"""

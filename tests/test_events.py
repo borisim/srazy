@@ -164,6 +164,76 @@ def test_filter_events_by_difficulty():
     finally:
         teardown_test_db()
 
+def test_update_event():
+    """Test updating an existing event"""
+    setup_test_db()
+    try:
+        with app.test_client() as client:
+            # Create an event
+            event_data = {
+                'sport': 'Football',
+                'date': (datetime.now() + timedelta(days=7)).isoformat(),
+                'place': 'Central Park',
+                'difficulty': 'Intermediate',
+                'latitude': 40.785091,
+                'longitude': -73.968285,
+                'description': 'Original description'
+            }
+            
+            create_response = client.post('/api/events',
+                                         data=json.dumps(event_data),
+                                         content_type='application/json')
+            event_id = create_response.get_json()['id']
+            
+            # Update the event
+            update_data = {
+                'sport': 'Basketball',
+                'difficulty': 'Advanced',
+                'description': 'Updated description'
+            }
+            
+            update_response = client.put(f'/api/events/{event_id}',
+                                        data=json.dumps(update_data),
+                                        content_type='application/json')
+            assert update_response.status_code == 200
+            updated_event = update_response.get_json()
+            assert updated_event['sport'] == 'Basketball'
+            assert updated_event['difficulty'] == 'Advanced'
+            assert updated_event['description'] == 'Updated description'
+    finally:
+        teardown_test_db()
+
+def test_delete_event():
+    """Test deleting an event"""
+    setup_test_db()
+    try:
+        with app.test_client() as client:
+            # Create an event
+            event_data = {
+                'sport': 'Football',
+                'date': (datetime.now() + timedelta(days=7)).isoformat(),
+                'place': 'Central Park',
+                'difficulty': 'Intermediate',
+                'latitude': 40.785091,
+                'longitude': -73.968285
+            }
+            
+            create_response = client.post('/api/events',
+                                         data=json.dumps(event_data),
+                                         content_type='application/json')
+            event_id = create_response.get_json()['id']
+            
+            # Delete the event
+            delete_response = client.delete(f'/api/events/{event_id}')
+            assert delete_response.status_code == 200
+            
+            # Verify event is deleted
+            get_response = client.get('/api/events')
+            events = get_response.get_json()
+            assert len(events) == 0
+    finally:
+        teardown_test_db()
+
 if __name__ == '__main__':
     print("Running event tests...")
     
@@ -184,5 +254,11 @@ if __name__ == '__main__':
     
     test_filter_events_by_difficulty()
     print("✓ Filter events by difficulty test passed")
+    
+    test_update_event()
+    print("✓ Update event test passed")
+    
+    test_delete_event()
+    print("✓ Delete event test passed")
     
     print("\nAll event tests passed! ✓")
