@@ -67,9 +67,15 @@ pip install -r requirements.txt
 
 4. Run the application:
 ```bash
+# Using the run script (recommended for development)
+python run.py
+
+# Or directly from the backend directory
 cd app/backend
 python app.py
 ```
+
+**Note:** The development server runs in debug mode. For production deployment, use a production WSGI server (see Deployment section below).
 
 5. Open your browser and navigate to:
 ```
