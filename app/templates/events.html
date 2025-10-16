@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}Events Map - Srazy{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="{{ url_for('static', filename='css/events.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="events-container">
+    <!-- Left Filter Panel -->
+    <div class="filter-panel">
+        <h2>Filter Events</h2>
+        <form id="filter-form">
+            <div class="form-group">
+                <label for="sport-filter">Sport</label>
+                <select id="sport-filter" name="sport">
+                    <option value="">All Sports</option>
+                    <option value="Football">Football</option>
+                    <option value="Basketball">Basketball</option>
+                    <option value="Tennis">Tennis</option>
+                    <option value="Running">Running</option>
+                    <option value="Cycling">Cycling</option>
+                    <option value="Swimming">Swimming</option>
+                    <option value="Volleyball">Volleyball</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="date-from-filter">Date From</label>
+                <input type="date" id="date-from-filter" name="date_from">
+            </div>
+            
+            <div class="form-group">
+                <label for="date-to-filter">Date To</label>
+                <input type="date" id="date-to-filter" name="date_to">
+            </div>
+            
+            <div class="form-group">
+                <label for="place-filter">Place</label>
+                <input type="text" id="place-filter" name="place" placeholder="Search location...">
+            </div>
+            
+            <div class="form-group">
+                <label for="difficulty-filter">Difficulty</label>
+                <select id="difficulty-filter" name="difficulty">
+                    <option value="">All Levels</option>
+                    <option value="Beginner">Beginner</option>
+                    <option value="Intermediate">Intermediate</option>
+                    <option value="Advanced">Advanced</option>
+                    <option value="Expert">Expert</option>
+                </select>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Apply Filters</button>
+            <button type="button" id="clear-filters" class="btn btn-secondary">Clear Filters</button>
+        </form>
+    </div>
+    
+    <!-- Map Container -->
+    <div class="map-container">
+        <div id="map"></div>
+    </div>
+    
+    <!-- Right Event Creation Panel -->
+    <div class="create-panel">
+        <h2>Create Event</h2>
+        <button id="show-create-form" class="btn btn-primary">+ New Event</button>
+        
+        <form id="create-event-form" class="hidden">
+            <div class="form-group">
+                <label for="event-sport">Sport *</label>
+                <select id="event-sport" name="sport" required>
+                    <option value="">Select Sport</option>
+                    <option value="Football">Football</option>
+                    <option value="Basketball">Basketball</option>
+                    <option value="Tennis">Tennis</option>
+                    <option value="Running">Running</option>
+                    <option value="Cycling">Cycling</option>
+                    <option value="Swimming">Swimming</option>
+                    <option value="Volleyball">Volleyball</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="event-date">Date & Time *</label>
+                <input type="datetime-local" id="event-date" name="date" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="event-place">Place *</label>
+                <input type="text" id="event-place" name="place" placeholder="Event location" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="event-difficulty">Difficulty *</label>
+                <select id="event-difficulty" name="difficulty" required>
+                    <option value="">Select Difficulty</option>
+                    <option value="Beginner">Beginner</option>
+                    <option value="Intermediate">Intermediate</option>
+                    <option value="Advanced">Advanced</option>
+                    <option value="Expert">Expert</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="event-latitude">Latitude *</label>
+                <input type="number" id="event-latitude" name="latitude" step="0.000001" placeholder="Click on map" required readonly>
+            </div>
+            
+            <div class="form-group">
+                <label for="event-longitude">Longitude *</label>
+                <input type="number" id="event-longitude" name="longitude" step="0.000001" placeholder="Click on map" required readonly>
+            </div>
+            
+            <div class="form-group">
+                <label for="event-description">Description</label>
+                <textarea id="event-description" name="description" rows="3" placeholder="Event details..."></textarea>
+            </div>
+            
+            <div class="form-help">
+                <small>* Click on the map to set event location</small>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Create Event</button>
+            <button type="button" id="cancel-create" class="btn btn-secondary">Cancel</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="{{ url_for('static', filename='js/events.js') }}"></script>
+{% endblock %}
