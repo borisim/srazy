@@ -199,7 +199,9 @@ def register_user():
         return jsonify(user.to_dict()), 201
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': str(e)}), 400
+        # Log the error for debugging but don't expose details to user
+        app.logger.error(f'Registration error: {str(e)}')
+        return jsonify({'error': 'Registration failed. Please try again.'}), 400
 
 @app.route('/api/users/login', methods=['POST'])
 def login_user():
@@ -223,7 +225,9 @@ def login_user():
         
         return jsonify(user.to_dict()), 200
     except Exception as e:
-        return jsonify({'error': str(e)}), 400
+        # Log the error for debugging but don't expose details to user
+        app.logger.error(f'Login error: {str(e)}')
+        return jsonify({'error': 'Login failed. Please try again.'}), 400
 
 @app.route('/api/users/logout', methods=['POST'])
 def logout_user():
@@ -273,7 +277,9 @@ def participate_in_event(event_id):
             }), 200
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': str(e)}), 400
+        # Log the error for debugging but don't expose details to user
+        app.logger.error(f'Participation error: {str(e)}')
+        return jsonify({'error': 'Failed to update participation. Please try again.'}), 400
 
 @app.route('/api/health')
 def health_check():
