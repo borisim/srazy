@@ -125,10 +125,32 @@
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
 }
 
+.event-card .event-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+}
+
 .event-card h3 {
     color: var(--primary-color);
-    margin-bottom: 0.75rem;
+    margin: 0;
     font-size: 1.3rem;
+}
+
+.event-card .event-author {
+    font-size: 0.85rem;
+    color: var(--gray);
+    font-style: italic;
+}
+
+.participant-badge {
+    background-color: #e3f2fd;
+    color: #1976d2;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 500;
 }
 
 .event-card p {
@@ -181,6 +203,32 @@
     font-size: 1.5rem;
     color: var(--primary-color);
     margin-bottom: 1.5rem;
+}
+
+.create-panel h3 {
+    font-size: 1.2rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+/* Auth Section */
+#auth-section {
+    margin-bottom: 1.5rem;
+}
+
+.auth-form {
+    margin-top: 1rem;
+}
+
+#logged-in-view {
+    padding: 1rem;
+    background-color: var(--bg-color);
+    border-radius: var(--border-radius);
+}
+
+#current-username {
+    font-weight: bold;
+    color: var(--primary-color);
 }
 
 .create-panel .form-group {
@@ -315,6 +363,23 @@
 
 .event-popup .btn-danger:hover {
     background-color: #c0392b;
+}
+
+.event-popup .btn-participate {
+    background-color: #27ae60;
+}
+
+.event-popup .btn-participate:hover {
+    background-color: #229954;
+}
+
+.btn-success {
+    background-color: #27ae60;
+    color: var(--white);
+}
+
+.btn-success:hover {
+    background-color: #229954;
 }
 
 /* Temporary marker styles */
