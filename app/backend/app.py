@@ -1,7 +1,7 @@
 """
 Main application module for Srazy web application
 """
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, session
 import os
 from pathlib import Path
 from datetime import datetime
@@ -19,8 +19,12 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', f'sqlite:
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize database
-from app.backend.models import db, Event
+from app.backend.models import db, Event, User
 db.init_app(app)
+
+# Session configuration
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 
 # Create tables
 with app.app_context():
@@ -95,6 +99,9 @@ def create_event():
         # Parse date
         event_date = datetime.fromisoformat(data['date'])
         
+        # Get current user from session (if logged in)
+        author_id = session.get('user_id')
+        
         # Create new event
         event = Event(
             sport=data['sport'],
@@ -103,7 +110,8 @@ def create_event():
             difficulty=data['difficulty'],
             latitude=float(data['latitude']),
             longitude=float(data['longitude']),
-            description=data.get('description', '')
+            description=data.get('description', ''),
+            author_id=author_id
         )
         
         db.session.add(event)
@@ -154,6 +162,124 @@ def delete_event(event_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 400
+
+@app.route('/api/users/register', methods=['POST'])
+def register_user():
+    """Register a new user"""
+    try:
+        data = request.get_json()
+        
+        # Validate required fields
+        required_fields = ['username', 'email', 'password']
+        for field in required_fields:
+            if field not in data:
+                return jsonify({'error': f'Missing required field: {field}'}), 400
+        
+        # Check if user already exists
+        if User.query.filter_by(username=data['username']).first():
+            return jsonify({'error': 'Username already exists'}), 400
+        
+        if User.query.filter_by(email=data['email']).first():
+            return jsonify({'error': 'Email already exists'}), 400
+        
+        # Create new user
+        user = User(
+            username=data['username'],
+            email=data['email']
+        )
+        user.set_password(data['password'])
+        
+        db.session.add(user)
+        db.session.commit()
+        
+        # Auto-login after registration
+        session['user_id'] = user.id
+        session['username'] = user.username
+        
+        return jsonify(user.to_dict()), 201
+    except Exception as e:
+        db.session.rollback()
+        # Log the error for debugging but don't expose details to user
+        app.logger.error(f'Registration error: {str(e)}')
+        return jsonify({'error': 'Registration failed. Please try again.'}), 400
+
+@app.route('/api/users/login', methods=['POST'])
+def login_user():
+    """Login a user"""
+    try:
+        data = request.get_json()
+        
+        # Validate required fields
+        if 'username' not in data or 'password' not in data:
+            return jsonify({'error': 'Missing username or password'}), 400
+        
+        # Find user
+        user = User.query.filter_by(username=data['username']).first()
+        
+        if not user or not user.check_password(data['password']):
+            return jsonify({'error': 'Invalid username or password'}), 401
+        
+        # Set session
+        session['user_id'] = user.id
+        session['username'] = user.username
+        
+        return jsonify(user.to_dict()), 200
+    except Exception as e:
+        # Log the error for debugging but don't expose details to user
+        app.logger.error(f'Login error: {str(e)}')
+        return jsonify({'error': 'Login failed. Please try again.'}), 400
+
+@app.route('/api/users/logout', methods=['POST'])
+def logout_user():
+    """Logout a user"""
+    session.pop('user_id', None)
+    session.pop('username', None)
+    return jsonify({'message': 'Logged out successfully'}), 200
+
+@app.route('/api/users/current', methods=['GET'])
+def get_current_user():
+    """Get current logged in user"""
+    if 'user_id' in session:
+        user = User.query.get(session['user_id'])
+        if user:
+            return jsonify(user.to_dict()), 200
+    return jsonify({'error': 'Not logged in'}), 401
+
+@app.route('/api/events/<int:event_id>/participate', methods=['POST'])
+def participate_in_event(event_id):
+    """Join/leave an event"""
+    try:
+        # Check if user is logged in
+        if 'user_id' not in session:
+            return jsonify({'error': 'Must be logged in to participate'}), 401
+        
+        user = User.query.get(session['user_id'])
+        event = Event.query.get_or_404(event_id)
+        
+        # Check if user is already participating
+        if event in user.participating_events:
+            # Remove participation
+            user.participating_events.remove(event)
+            db.session.commit()
+            return jsonify({
+                'message': 'Removed from event',
+                'participating': False,
+                'participant_count': event.participants.count()
+            }), 200
+        else:
+            # Add participation
+            user.participating_events.append(event)
+            db.session.commit()
+            return jsonify({
+                'message': 'Joined event',
+                'participating': True,
+                'participant_count': event.participants.count()
+            }), 200
+    except Exception as e:
+        db.session.rollback()
+        # Log the error for debugging but don't expose details to user
+        app.logger.error(f'Participation error: {str(e)}')
+        return jsonify({'error': 'Failed to update participation. Please try again.'}), 400
 
 @app.route('/api/health')
 def health_check():

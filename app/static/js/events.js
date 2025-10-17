@@ -8,11 +8,13 @@ let useLeaflet = typeof L !== 'undefined';
 let currentView = 'map'; // 'map' or 'list'
 let currentEvents = [];
 let editingEventId = null;
+let currentUser = null;
 
 // Initialize the map when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
     initializeMap();
     setupEventListeners();
+    checkLoginStatus();
     loadEvents();
 });
 
@@ -146,6 +148,37 @@ function setupEventListeners() {
             createEvent();
         }
     });
+    
+    // Auth forms
+    document.getElementById('show-login-form').addEventListener('click', function() {
+        showLoginForm();
+    });
+    
+    document.getElementById('show-register-form').addEventListener('click', function() {
+        showRegisterForm();
+    });
+    
+    document.getElementById('cancel-login').addEventListener('click', function() {
+        hideAuthForms();
+    });
+    
+    document.getElementById('cancel-register').addEventListener('click', function() {
+        hideAuthForms();
+    });
+    
+    document.getElementById('login-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        loginUser();
+    });
+    
+    document.getElementById('register-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        registerUser();
+    });
+    
+    document.getElementById('logout-btn').addEventListener('click', function() {
+        logoutUser();
+    });
 }
 
 /**
@@ -265,8 +298,11 @@ function createEventPopup(event) {
             <p><strong>Location:</strong> ${event.place}</p>
             <p><strong>Date:</strong> ${formattedDate}</p>
             <p><strong>Difficulty:</strong> <span class="event-difficulty ${difficultyClass}">${event.difficulty}</span></p>
+            <p><strong>Author:</strong> ${event.author}</p>
+            <p><strong>Participants:</strong> ${event.participant_count} joined</p>
             ${event.description ? `<p><strong>Details:</strong> ${event.description}</p>` : ''}
             <div class="event-actions">
+                ${currentUser ? `<button class="btn-small btn-participate" onclick="participateInEvent(${event.id})">Join/Leave</button>` : ''}
                 <button class="btn-small" onclick="editEvent(${event.id})">Edit</button>
                 <button class="btn-small btn-danger" onclick="deleteEvent(${event.id})">Delete</button>
             </div>
@@ -461,6 +497,7 @@ function switchView(view) {
     
     if (view === 'map') {
         mapView.classList.add('active-view');
+        mapView.classList.remove('hidden');
         listView.classList.remove('active-view');
         listView.classList.add('hidden');
         mapBtn.classList.add('active');
@@ -468,8 +505,9 @@ function switchView(view) {
         displayEventsOnMap(currentEvents);
     } else {
         listView.classList.add('active-view');
-        mapView.classList.remove('active-view');
         listView.classList.remove('hidden');
+        mapView.classList.remove('active-view');
+        mapView.classList.add('hidden');
         listBtn.classList.add('active');
         mapBtn.classList.remove('active');
         displayEventsInList(currentEvents);
@@ -501,15 +539,19 @@ function displayEventsInList(events) {
         
         return `
             <div class="event-card">
-                <h3>${event.sport}</h3>
+                <div class="event-header">
+                    <h3>${event.sport}</h3>
+                    <div class="event-author">By ${event.author}</div>
+                </div>
                 <p><strong>📍 ${event.place}</strong></p>
                 <p>🗓️ ${formattedDate}</p>
                 ${event.description ? `<p>${event.description}</p>` : ''}
                 <div class="event-meta">
                     <span class="event-difficulty ${difficultyClass}">${event.difficulty}</span>
-                    <span>📍 ${event.latitude.toFixed(4)}, ${event.longitude.toFixed(4)}</span>
+                    <span class="participant-badge">👥 ${event.participant_count} joined</span>
                 </div>
                 <div class="event-actions">
+                    ${currentUser ? `<button class="btn btn-success" onclick="participateInEvent(${event.id})">Join/Leave Event</button>` : ''}
                     <button class="btn btn-primary" onclick="editEvent(${event.id})">Edit</button>
                     <button class="btn btn-secondary" onclick="deleteEvent(${event.id})">Delete</button>
                     ${useLeaflet ? `<button class="btn btn-primary" onclick="showOnMap(${event.latitude}, ${event.longitude})">Show on Map</button>` : ''}
@@ -609,4 +651,190 @@ function showNotification(message, type = 'info') {
     setTimeout(() => {
         notification.remove();
     }, 3000);
+}
+
+/**
+ * Check if user is logged in
+ */
+async function checkLoginStatus() {
+    try {
+        const response = await fetch('/api/users/current');
+        if (response.ok) {
+            currentUser = await response.json();
+            updateAuthUI(true);
+        } else {
+            currentUser = null;
+            updateAuthUI(false);
+        }
+    } catch (error) {
+        console.error('Error checking login status:', error);
+        currentUser = null;
+        updateAuthUI(false);
+    }
+}
+
+/**
+ * Update authentication UI
+ */
+function updateAuthUI(isLoggedIn) {
+    const loggedOutView = document.getElementById('logged-out-view');
+    const loggedInView = document.getElementById('logged-in-view');
+    const usernameSpan = document.getElementById('current-username');
+    
+    if (isLoggedIn && currentUser) {
+        loggedOutView.classList.add('hidden');
+        loggedInView.classList.remove('hidden');
+        usernameSpan.textContent = currentUser.username;
+    } else {
+        loggedOutView.classList.remove('hidden');
+        loggedInView.classList.add('hidden');
+    }
+}
+
+/**
+ * Show login form
+ */
+function showLoginForm() {
+    document.getElementById('login-form').classList.remove('hidden');
+    document.getElementById('register-form').classList.add('hidden');
+    document.getElementById('show-login-form').classList.add('hidden');
+    document.getElementById('show-register-form').classList.add('hidden');
+}
+
+/**
+ * Show register form
+ */
+function showRegisterForm() {
+    document.getElementById('register-form').classList.remove('hidden');
+    document.getElementById('login-form').classList.add('hidden');
+    document.getElementById('show-login-form').classList.add('hidden');
+    document.getElementById('show-register-form').classList.add('hidden');
+}
+
+/**
+ * Hide auth forms
+ */
+function hideAuthForms() {
+    document.getElementById('login-form').classList.add('hidden');
+    document.getElementById('register-form').classList.add('hidden');
+    document.getElementById('show-login-form').classList.remove('hidden');
+    document.getElementById('show-register-form').classList.remove('hidden');
+}
+
+/**
+ * Register new user
+ */
+async function registerUser() {
+    try {
+        const username = document.getElementById('register-username').value;
+        const email = document.getElementById('register-email').value;
+        const password = document.getElementById('register-password').value;
+        
+        const response = await fetch('/api/users/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username, email, password })
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Registration failed');
+        }
+        
+        currentUser = await response.json();
+        showNotification('Registration successful!', 'success');
+        document.getElementById('register-form').reset();
+        hideAuthForms();
+        updateAuthUI(true);
+        loadEvents(); // Reload to show participation options
+    } catch (error) {
+        console.error('Error registering:', error);
+        showNotification(error.message || 'Registration failed', 'error');
+    }
+}
+
+/**
+ * Login user
+ */
+async function loginUser() {
+    try {
+        const username = document.getElementById('login-username').value;
+        const password = document.getElementById('login-password').value;
+        
+        const response = await fetch('/api/users/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username, password })
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Login failed');
+        }
+        
+        currentUser = await response.json();
+        showNotification('Login successful!', 'success');
+        document.getElementById('login-form').reset();
+        hideAuthForms();
+        updateAuthUI(true);
+        loadEvents(); // Reload to show participation options
+    } catch (error) {
+        console.error('Error logging in:', error);
+        showNotification(error.message || 'Login failed', 'error');
+    }
+}
+
+/**
+ * Logout user
+ */
+async function logoutUser() {
+    try {
+        const response = await fetch('/api/users/logout', {
+            method: 'POST'
+        });
+        
+        if (!response.ok) {
+            throw new Error('Logout failed');
+        }
+        
+        currentUser = null;
+        showNotification('Logged out successfully', 'success');
+        updateAuthUI(false);
+        loadEvents(); // Reload to hide participation options
+    } catch (error) {
+        console.error('Error logging out:', error);
+        showNotification('Logout failed', 'error');
+    }
+}
+
+/**
+ * Participate in event (join/leave)
+ */
+async function participateInEvent(eventId) {
+    if (!currentUser) {
+        showNotification('Please login to participate in events', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/events/${eventId}/participate`, {
+            method: 'POST'
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to update participation');
+        }
+        
+        const result = await response.json();
+        showNotification(result.message, 'success');
+        loadEvents(); // Reload events to update participant count
+    } catch (error) {
+        console.error('Error participating in event:', error);
+        showNotification(error.message || 'Failed to update participation', 'error');
+    }
 }

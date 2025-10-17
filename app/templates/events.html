@@ -86,6 +86,56 @@
     
     <!-- Right Event Creation Panel -->
     <div class="create-panel">
+        <!-- User Auth Section -->
+        <div id="auth-section">
+            <div id="logged-out-view">
+                <h2>Account</h2>
+                <button id="show-login-form" class="btn btn-primary">Login</button>
+                <button id="show-register-form" class="btn btn-secondary">Register</button>
+                
+                <!-- Login Form -->
+                <form id="login-form" class="hidden auth-form">
+                    <h3>Login</h3>
+                    <div class="form-group">
+                        <label for="login-username">Username</label>
+                        <input type="text" id="login-username" name="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">Password</label>
+                        <input type="password" id="login-password" name="password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Login</button>
+                    <button type="button" id="cancel-login" class="btn btn-secondary">Cancel</button>
+                </form>
+                
+                <!-- Register Form -->
+                <form id="register-form" class="hidden auth-form">
+                    <h3>Register</h3>
+                    <div class="form-group">
+                        <label for="register-username">Username</label>
+                        <input type="text" id="register-username" name="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-email">Email</label>
+                        <input type="email" id="register-email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-password">Password</label>
+                        <input type="password" id="register-password" name="password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Register</button>
+                    <button type="button" id="cancel-register" class="btn btn-secondary">Cancel</button>
+                </form>
+            </div>
+            
+            <div id="logged-in-view" class="hidden">
+                <h2>Welcome, <span id="current-username"></span>!</h2>
+                <button id="logout-btn" class="btn btn-secondary">Logout</button>
+            </div>
+        </div>
+        
+        <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid #ddd;">
+        
         <h2 id="form-title">Create Event</h2>
         <button id="show-create-form" class="btn btn-primary">+ New Event</button>
         
